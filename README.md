@@ -51,6 +51,8 @@ Les noms `*.localhost` sont résolus automatiquement par Chrome, Firefox et Edge
 
 **Comptes de démonstration (fictifs)**, mot de passe `Sentinelle#Demo2026` : `admin.si` (administrateur), `awa.ouedraogo`, `ibrahim.sawadogo`, `fatimata.kabore`, `moussa.traore`. À la première connexion, un QR code permet de créer le second facteur avec n'importe quelle application TOTP (FreeOTP, Aegis, Google Authenticator...).
 
+**Une identité par navigateur** : la connexion est unique (SSO). Pour jouer plusieurs agents, utilisez une fenêtre privée ou un profil de navigateur par agent (voir `docs/DEMO_JURY.md`).
+
 Réinitialisation complète : `docker compose down -v`.
 
 ## Vérifications

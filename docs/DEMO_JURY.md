@@ -2,6 +2,8 @@
 
 Pré-requis : `docker compose up -d --build`, tous les services `healthy`. Deux navigateurs (ou une fenêtre privée) pour jouer deux agents. Comptes fictifs, mot de passe `Sentinelle#Demo2026`. Première connexion de chaque compte : créer le TOTP avec l'application d'authentification.
 
+**Un navigateur = une identité à la fois.** La connexion est unique (SSO) : si vous êtes déjà connecté à Keycloak dans un navigateur (par exemple en `admin.si` sur le portail), Element vous reconnecte automatiquement avec ce même compte, et « Se déconnecter » dans Element vous reconnecte aussitôt. Pour jouer plusieurs agents, utilisez **une fenêtre privée ou un profil de navigateur distinct par agent** (administrateur, Awa, Ibrahim...). Pour changer d'identité dans un même navigateur, fermez d'abord la session Keycloak : `http://auth.localhost:8080/realms/sentinelle/protocol/openid-connect/logout`, puis confirmez.
+
 ## Épreuve 1 : « Le serveur ne lit rien »
 
 1. Dans Element (`http://chat.localhost:8080`), `awa.ouedraogo` crée une discussion de groupe avec `ibrahim.sawadogo`, envoie `TEMOIN-7421` et joint un PDF.
