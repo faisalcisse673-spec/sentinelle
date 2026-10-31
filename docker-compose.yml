@@ -136,6 +136,24 @@ services:
           - auth.localhost
           - admin.localhost
 
+  verifier:
+    # Preuve « le serveur ne lit rien » : docker compose --profile outils run --rm verifier MOT-TEMOIN
+    image: postgres:16-alpine
+    profiles: ["outils"]
+    entrypoint: ["sh", "/verify.sh"]
+    environment:
+      PGHOST: postgres
+      PGUSER: synapse
+      PGPASSWORD: demo-synapse-db-pw
+      PGDATABASE: synapse
+    volumes:
+      - ./scripts/verify-no-plaintext.sh:/verify.sh:ro
+      - synapse_data:/synapse-data:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks: [internal]
+
 networks:
   internal:
 
