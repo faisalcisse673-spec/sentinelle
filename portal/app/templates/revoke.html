@@ -1,0 +1,34 @@
+{% extends "base.html" %}{% set active = 'agents' %}
+{% block title %}Révocation{% endblock %}
+{% block content %}
+<h1>Révocation d'un agent</h1>
+{% if error %}<div class="alert err">{{ error }}</div>{% endif %}
+
+<section class="card">
+  <p><b>{{ agent.full_name }}</b> ({{ agent.username }}) · {{ agent.ministere }} · {{ agent.fonction }}</p>
+
+  {% if not report %}
+  <p>Cette opération coupe immédiatement l'accès à la messagerie <b>sur tous les appareils</b> de l'agent :
+     compte Keycloak désactivé et sessions fermées, compte Matrix désactivé, appareils supprimés,
+     sortie de toutes les salles. Les clés de chiffrement des salles sont renouvelées par les clients des membres restants.</p>
+  <form method="post" action="/agents/{{ agent.id }}/revoke">
+    <input type="hidden" name="csrf" value="{{ csrf }}">
+    <button class="btn danger" type="submit">Confirmer la révocation</button>
+    <a class="btn ghost" href="/agents">Annuler</a>
+  </form>
+  {% else %}
+  <div class="alert {{ 'ok' if report.complete else 'err' }}">
+    {% if report.complete %}Accès révoqué et vérifié en {{ report.total_ms }} ms.
+    {% else %}Révocation incomplète : relancez l'opération. Voir les étapes en erreur ci-dessous.{% endif %}
+  </div>
+  <table>
+    <tr><th>Étape</th><th>Résultat</th><th>Détail</th><th>Durée</th></tr>
+    {% for s in report.steps %}
+    <tr><td>{{ s.name }}</td><td>{% if s.ok %}<span class="pill ok">OK</span>{% else %}<span class="pill bad">ÉCHEC</span>{% endif %}</td>
+        <td>{{ s.detail }}</td><td>{{ s.ms }} ms</td></tr>
+    {% endfor %}
+  </table>
+  <p><a class="btn ghost" href="/agents">Retour à l'annuaire</a></p>
+  {% endif %}
+</section>
+{% endblock %}

@@ -1,0 +1,36 @@
+{
+  "default_server_config": {
+    "m.homeserver": {
+      "base_url": "http://matrix.localhost:8080",
+      "server_name": "sentinelle.local"
+    }
+  },
+  "brand": "Sentinelle",
+  "default_country_code": "BF",
+  "disable_custom_urls": true,
+  "disable_guests": true,
+  "disable_3pid_login": true,
+  "show_labs_settings": false,
+  "sso_redirect_options": { "immediate": true },
+  "integrations_ui_url": "",
+  "integrations_rest_url": "",
+  "integrations_widgets_urls": [],
+  "bug_report_endpoint_url": "",
+  "room_directory": { "servers": [] },
+  "enable_presence_by_hs_url": { "http://matrix.localhost:8080": false },
+  "setting_defaults": {
+    "language": "fr",
+    "UIFeature.registration": false,
+    "UIFeature.passwordReset": false,
+    "UIFeature.deactivate": false,
+    "UIFeature.thirdPartyId": false,
+    "UIFeature.voip": false,
+    "UIFeature.widgets": false,
+    "UIFeature.locationSharing": false,
+    "UIFeature.feedback": false,
+    "UIFeature.identityServer": false,
+    "UIFeature.flair": false,
+    "UIFeature.communities": false,
+    "UIFeature.advancedEncryption": false
+  }
+}

@@ -1,0 +1,56 @@
+{% extends "base.html" %}{% set active = 'agents' %}
+{% block title %}Agents{% endblock %}
+{% block content %}
+<h1>Annuaire des agents</h1>
+
+{% if error %}<div class="alert err">{{ error }}</div>{% endif %}
+{% if created %}
+<div class="alert ok">
+  <b>Agent enrôlé : {{ created.username }}</b><br>
+  Mot de passe provisoire (affiché une seule fois) : <code>{{ created.password }}</code><br>
+  À la première connexion, l'agent doit changer son mot de passe et configurer son second facteur (application TOTP).
+</div>
+{% endif %}
+
+<section class="card">
+  <h2>Enrôler un agent</h2>
+  <form method="post" action="/agents" class="grid">
+    <input type="hidden" name="csrf" value="{{ csrf }}">
+    <label>Identifiant<input name="username" required pattern="[a-z][a-z0-9._-]{2,31}" placeholder="prenom.nom"></label>
+    <label>Nom complet<input name="full_name" required placeholder="Prénom Nom"></label>
+    <label>Ministère / structure<input name="ministere" required list="ministeres" placeholder="MTDPCE"></label>
+    <label>Fonction<input name="fonction" required placeholder="Directeur des études"></label>
+    <label>Rôle
+      <select name="role">{% for r in roles %}<option value="{{ r }}">{{ 'Agent' if r == 'agent' else 'Administrateur sécurité' }}</option>{% endfor %}</select>
+    </label>
+    <div class="end"><button class="btn" type="submit">Enrôler</button></div>
+    <datalist id="ministeres">{% for m in ministeres %}<option value="{{ m }}">{% endfor %}</datalist>
+  </form>
+</section>
+
+<section class="card">
+  <h2>Agents
+    <form method="get" class="inline">
+      <select name="ministere" aria-label="Filtrer par ministère">
+        <option value="">Tous les ministères</option>
+        {% for m in ministeres %}<option value="{{ m }}" {{ 'selected' if m == selected }}>{{ m }}</option>{% endfor %}
+      </select> <button class="btn ghost sm" type="submit">Filtrer</button>
+    </form>
+  </h2>
+  <table>
+    <tr><th>Agent</th><th>Ministère</th><th>Fonction</th><th>Rôle</th><th>Identité Matrix</th><th>Statut</th><th></th></tr>
+    {% for a in agents %}
+    <tr>
+      <td><b>{{ a.full_name }}</b><br><span class="muted">{{ a.username }}</span></td>
+      <td>{{ a.ministere }}</td><td>{{ a.fonction }}</td>
+      <td>{{ 'Admin sécurité' if a.role == 'admin-si' else 'Agent' }}</td>
+      <td><code>{{ a.mxid }}</code></td>
+      <td>{% if a.status == 'actif' %}<span class="pill ok">actif</span>
+          {% elif a.status == 'revoque' %}<span class="pill bad">révoqué</span>
+          {% else %}<span class="pill warn">révocation partielle</span>{% endif %}</td>
+      <td>{% if a.status != 'revoque' and a.username != user.username %}<a class="btn danger sm" href="/agents/{{ a.id }}/revoke">Révoquer</a>{% endif %}</td>
+    </tr>
+    {% else %}<tr><td colspan="7" class="muted">Aucun agent.</td></tr>{% endfor %}
+  </table>
+</section>
+{% endblock %}

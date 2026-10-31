@@ -1,0 +1,37 @@
+{
+	auto_https off
+	admin off
+}
+
+(securite) {
+	header {
+		X-Content-Type-Options nosniff
+		Referrer-Policy no-referrer
+		-Server
+	}
+}
+
+http://chat.localhost:8080 {
+	import securite
+	header X-Frame-Options DENY
+	reverse_proxy element:80
+}
+
+http://matrix.localhost:8080 {
+	import securite
+	# L'API d'administration de Synapse n'est jamais exposee : seul le portail
+	# l'atteint, directement, sur le reseau interne.
+	@interdit path /_synapse/admin/* /_synapse/metrics* /_matrix/federation/* /_matrix/key/*
+	respond @interdit 403
+	reverse_proxy synapse:8008
+}
+
+http://auth.localhost:8080 {
+	import securite
+	reverse_proxy keycloak:8080
+}
+
+http://admin.localhost:8080 {
+	import securite
+	reverse_proxy portal:8000
+}

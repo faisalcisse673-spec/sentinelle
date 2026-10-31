@@ -1,0 +1,26 @@
+{% extends "base.html" %}{% set active = 'home' %}
+{% block title %}Tableau de bord{% endblock %}
+{% block content %}
+<h1>Tableau de bord</h1>
+<section class="stats">
+  <div class="stat"><b>{{ stats.actifs }}</b><span>agents actifs</span></div>
+  <div class="stat"><b>{{ stats.ministeres }}</b><span>ministères / structures</span></div>
+  <div class="stat"><b>{{ stats.canaux }}</b><span>canaux institutionnels</span></div>
+  <div class="stat danger"><b>{{ stats.revoques }}</b><span>accès révoqués</span></div>
+</section>
+<section class="card">
+  <h2>Actions rapides</h2>
+  <p><a class="btn" href="/agents">Enrôler un agent</a>
+     <a class="btn ghost" href="/channels">Créer un canal classifié</a>
+     <a class="btn ghost" href="/conformite">Vérifier le second facteur</a></p>
+</section>
+<section class="card">
+  <h2>Dernières actions d'administration</h2>
+  <table>
+    <tr><th>Date</th><th>Administrateur</th><th>Action</th><th>Cible</th><th>Détail</th></tr>
+    {% for r in recent %}
+    <tr><td>{{ r.ts|ts }}</td><td>{{ r.actor }}</td><td>{{ r.action }}</td><td>{{ r.target }}</td><td>{{ r.detail }}</td></tr>
+    {% else %}<tr><td colspan="5" class="muted">Aucune action.</td></tr>{% endfor %}
+  </table>
+</section>
+{% endblock %}

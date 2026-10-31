@@ -1,0 +1,40 @@
+{% extends "base.html" %}{% set active = 'channels' %}
+{% block title %}Canaux{% endblock %}
+{% block content %}
+<h1>Canaux institutionnels classifiés</h1>
+{% if error %}<div class="alert err">{{ error }}</div>{% endif %}
+{% if ok %}<div class="alert ok">{{ ok }}</div>{% endif %}
+
+<section class="card">
+  <h2>Créer un canal</h2>
+  <p class="muted">Chaque canal est chiffré de bout en bout, accessible sur invitation uniquement, et ses messages
+     expirent automatiquement selon le niveau choisi (purge côté serveur sur l'horodatage, sans jamais lire le contenu).</p>
+  <form method="post" action="/channels" class="grid">
+    <input type="hidden" name="csrf" value="{{ csrf }}">
+    <label>Nom du canal<input name="name" required placeholder="Cabinet : instructions de service"></label>
+    <label>Niveau de classification
+      <select name="level">{% for k, l in levels.items() %}<option value="{{ k }}">{{ l.label }}</option>{% endfor %}</select>
+    </label>
+    <label>Ministère invité
+      <select name="ministere"><option value="*">Toute l'administration</option>
+        {% for m in ministeres %}<option value="{{ m }}">{{ m }}</option>{% endfor %}</select>
+    </label>
+    <label>Responsable du canal
+      <select name="owner">{% for a in agents %}<option value="{{ a.username }}">{{ a.full_name }} ({{ a.ministere }})</option>{% endfor %}</select>
+    </label>
+    <div class="end"><button class="btn" type="submit">Créer le canal</button></div>
+  </form>
+  <ul class="levels">{% for k, l in levels.items() %}<li><b>{{ l.label }}</b> : {{ l.description }}</li>{% endfor %}</ul>
+</section>
+
+<section class="card">
+  <h2>Canaux existants</h2>
+  <table>
+    <tr><th>Canal</th><th>Niveau</th><th>Ministère</th><th>Responsable</th><th>Invités</th><th>Création</th></tr>
+    {% for c in channels %}
+    <tr><td>{{ c.name }}</td><td>{{ levels[c.niveau].label if c.niveau in levels else c.niveau }}</td>
+        <td>{{ 'Tous' if c.ministere == '*' else c.ministere }}</td><td>{{ c.owner }}</td><td>{{ c.members }}</td><td>{{ c.created_at|ts }}</td></tr>
+    {% else %}<tr><td colspan="6" class="muted">Aucun canal.</td></tr>{% endfor %}
+  </table>
+</section>
+{% endblock %}

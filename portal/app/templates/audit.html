@@ -1,0 +1,14 @@
+{% extends "base.html" %}{% set active = 'audit' %}
+{% block title %}Journal{% endblock %}
+{% block content %}
+<h1>Journal d'administration</h1>
+<section class="card">
+  <p class="muted">Actions des administrateurs uniquement (enrôlement, révocation, canaux). Aucun message n'y figure.</p>
+  <table>
+    <tr><th>Date</th><th>Administrateur</th><th>Action</th><th>Cible</th><th>Détail</th></tr>
+    {% for r in rows %}
+    <tr><td>{{ r.ts|ts }}</td><td>{{ r.actor }}</td><td>{{ r.action }}</td><td>{{ r.target }}</td><td>{{ r.detail }}</td></tr>
+    {% else %}<tr><td colspan="5" class="muted">Journal vide.</td></tr>{% endfor %}
+  </table>
+</section>
+{% endblock %}

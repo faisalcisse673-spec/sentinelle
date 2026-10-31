@@ -1,0 +1,102 @@
+# Configuration Synapse de Sentinelle. Secrets de DEMONSTRATION uniquement.
+server_name: "sentinelle.local"
+public_baseurl: "http://matrix.localhost:8080/"
+pid_file: /data/homeserver.pid
+report_stats: false
+signing_key_path: /data/sentinelle.signing.key
+media_store_path: /data/media_store
+log_config: /config/log.config
+
+listeners:
+  - port: 8008
+    tls: false
+    type: http
+    x_forwarded: true
+    bind_addresses: ["0.0.0.0"]
+    resources:
+      - names: [client]
+        compress: false
+
+database:
+  name: psycopg2
+  args:
+    user: synapse
+    password: demo-synapse-db-pw
+    database: synapse
+    host: postgres
+    cp_min: 5
+    cp_max: 10
+
+registration_shared_secret: "demo-registration-shared-secret"
+macaroon_secret_key: "demo-macaroon-secret-a-changer"
+form_secret: "demo-form-secret-a-changer"
+
+# --- Identite : aucune inscription ni mot de passe, uniquement Keycloak (2FA) ---
+enable_registration: false
+password_config:
+  enabled: false
+
+oidc_providers:
+  - idp_id: keycloak
+    idp_name: "Compte agent (authentification forte)"
+    issuer: "http://auth.localhost:8080/realms/sentinelle"
+    client_id: "synapse"
+    client_secret: "demo-synapse-client-secret"
+    scopes: ["openid", "profile"]
+    discover: true
+    # DEMO en HTTP local : authlib refuse un "issuer" non-https. A SUPPRIMER (mettre false)
+    # des que la plateforme est servie en HTTPS (voir docs/NOTE_SECURITE.md, durcissement).
+    skip_verification: true
+    allow_existing_users: false
+    backchannel_logout_enabled: true
+    # Defense en profondeur : seul un compte portant le role "agent" ou "admin-si"
+    # dans Keycloak peut ouvrir une session Matrix.
+    attribute_requirements:
+      - attribute: roles
+        one_of: ["agent", "admin-si"]
+    user_mapping_provider:
+      config:
+        localpart_template: "{{ user.preferred_username }}"
+        display_name_template: "{{ user.name }}"
+
+sso:
+  client_whitelist:
+    - "http://chat.localhost:8080/"
+
+# Le portail et Keycloak sont sur le reseau Docker prive.
+ip_range_whitelist:
+  - "10.0.0.0/8"
+  - "172.16.0.0/12"
+  - "192.168.0.0/16"
+
+# --- Chiffrement de bout en bout par defaut pour toute nouvelle salle ---
+encryption_enabled_by_default_for_room_type: all
+
+# --- Souverainete et minimisation des metadonnees ---
+federation_domain_whitelist: []
+trusted_key_servers: []
+suppress_key_server_warning: true
+allow_public_rooms_without_auth: false
+allow_public_rooms_over_federation: false
+room_list_publication_rules:
+  - action: deny
+presence:
+  enabled: false
+url_preview_enabled: false
+user_ips_max_age: 1d
+redaction_retention_period: 7d
+delete_stale_devices_after: 30d
+user_directory:
+  enabled: true
+  search_all_users: true
+  prefer_local_users_in_search: true
+max_upload_size: 50M
+
+# --- Expiration automatique des messages (canaux classifies) ---
+retention:
+  enabled: true
+  purge_jobs:
+    - longest_max_lifetime: 1d
+      interval: 1m
+    - shortest_max_lifetime: 1d
+      interval: 1h

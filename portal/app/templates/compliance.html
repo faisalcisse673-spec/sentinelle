@@ -1,0 +1,18 @@
+{% extends "base.html" %}{% set active = 'conf' %}
+{% block title %}Conformité 2FA{% endblock %}
+{% block content %}
+<h1>Conformité du second facteur</h1>
+<section class="card">
+  <p class="muted">Tout agent actif doit avoir configuré son second facteur (TOTP). Un agent « en attente »
+     le configurera obligatoirement à sa première connexion : il ne peut pas utiliser la messagerie avant.</p>
+  <table>
+    <tr><th>Agent</th><th>Second facteur</th></tr>
+    {% for r in rows %}
+    <tr><td>{{ r.full_name }} <span class="muted">({{ r.username }})</span></td>
+        <td>{% if r.error %}<span class="pill warn">indéterminé</span> {{ r.error }}
+            {% elif r.otp %}<span class="pill ok">configuré</span>
+            {% else %}<span class="pill warn">en attente de première connexion</span>{% endif %}</td></tr>
+    {% else %}<tr><td colspan="2" class="muted">Aucun agent actif.</td></tr>{% endfor %}
+  </table>
+</section>
+{% endblock %}

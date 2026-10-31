@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Portail{% endblock %} · Sentinelle</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<header class="top">
+  <div class="brand"><span class="flag"></span> Sentinelle <small>Portail d'administration</small></div>
+  {% if user %}
+  <nav>
+    <a href="/" class="{{ 'on' if active == 'home' }}">Tableau de bord</a>
+    <a href="/agents" class="{{ 'on' if active == 'agents' }}">Agents</a>
+    <a href="/channels" class="{{ 'on' if active == 'channels' }}">Canaux</a>
+    <a href="/conformite" class="{{ 'on' if active == 'conf' }}">Conformité 2FA</a>
+    <a href="/audit" class="{{ 'on' if active == 'audit' }}">Journal</a>
+  </nav>
+  <div class="who">{{ user.name }} · <a href="/logout">Déconnexion</a></div>
+  {% endif %}
+</header>
+<main>
+  {% block content %}{% endblock %}
+</main>
+<footer>Messagerie souveraine de l'administration · le portail ne lit et ne stocke aucun message.</footer>
+</body>
+</html>
