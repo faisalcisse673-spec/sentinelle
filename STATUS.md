@@ -1,38 +1,49 @@
 # STATUS (fichier de reprise : à lire EN PREMIER à chaque reprise de session)
 
-Dernière mise à jour : sam. 31 oct. 2026, 18h55 (UTC+0). Échéance de dépôt : **dim. 1er nov. 2026, 23h59**.
+Dernière mise à jour : sam. 31 oct. 2026, ~19h40 (UTC+0). Échéance de dépôt : **dim. 1er nov. 2026, 23h59**.
+
+## RÈGLE ABSOLUE
+Le travail précédent EXISTE. Ne JAMAIS repartir de zéro ni réécrire un fichier existant sans l'avoir lu.
+Avant toute écriture : `git status`, `git log`, lire le fichier. Les anciennes itérations sont dans /home/claude :
+- `sentinelle/` : **dépôt actuel, à continuer** (réécriture du 31 oct. 12h49-13h00 : portail + 42 tests + Docker Compose)
+- `kibare/`, `tenga-msg/` : itérations antérieures (mêmes idées, anciens noms). Ne pas les utiliser comme base.
+- `sandbox/` : essais réels (hors Docker) contre un vrai Keycloak 26.5.7 et un vrai Synapse (scénarios 1 et 2 : enrôlement,
+  2e facteur, révocation, whoami 401, reconnexion refusée) : VALIDÉS sur l'itération `kibare`.
 
 ## Contexte
 - Sprint pré-hackathon 2026 (Hackathon 226, MTDPCE-DGTD), challenge « La messagerie souveraine de l'administration ».
 - Équipe de 3 élèves ingénieurs EPO (5e année) : l'utilisateur (IA et Data), Alfred (Génie logiciel), Cramer (Réseaux et Télécoms).
-- Aucun travail antérieur n'existe : tout est reconstruit dans ce dépôt (décision du 31 oct. 18h53).
-- Nom proposé (à confirmer par l'équipe) : équipe **Harmattan**, produit **Sentinelle**.
-- Machine de démo : HP EliteBook 1040 G8, 32 Go de RAM, probablement Windows + Docker Desktop (donc fins de ligne LF forcées via .gitattributes).
+- Produit : **Sentinelle**. Nom d'équipe : à confirmer (proposition : Harmattan).
+- Machine de démo : HP EliteBook 1040 G8, 32 Go, Docker Desktop probable (fins de ligne LF forcées via .gitattributes).
 
-## Décisions d'architecture (validées)
-- Niveau open source : **Étendre et adapter** (Element Web + Synapse), AUCUNE crypto maison (Olm/Megolm).
-- Identité : Keycloak (OIDC, TOTP obligatoire, rôles). Synapse en SSO uniquement, inscription fermée, fédération coupée.
-- Portail d'administration (FastAPI + Jinja2) : enrôlement, annuaire par ministère et fonction, révocation unique (Keycloak + Synapse), journal d'audit, canaux institutionnels classifiés (rétention Synapse).
-- Astuce réseau : Caddy avec alias Docker `auth.localhost`, `matrix.localhost`, `chat.localhost`, `admin.localhost` sur le port 8080, pour que navigateur et conteneurs utilisent les mêmes URL.
-- Test « rien en clair » : script qui cherche une chaîne témoin dans pg_dump et le stockage média.
+## Architecture (en place dans le dépôt)
+- Niveau open source : **Étendre et adapter** (Element Web + Synapse). AUCUNE crypto maison (Olm/Megolm côté clients).
+- Keycloak (OIDC, rôles `agent` / `admin-si`, TOTP exigé par action requise CONFIGURE_TOTP à la 1re connexion).
+- Synapse : SSO uniquement, mots de passe Matrix désactivés, inscription fermée, fédération coupée, présence coupée,
+  E2EE par défaut sur toutes les salles, `attribute_requirements` (rôle requis), rétention serveur.
+- Caddy : domaines distincts `chat.` `matrix.` `auth.` `admin.localhost:8080` (alias Docker, mêmes URL navigateur/conteneurs).
+  Origines séparées : le portail ne partage pas l'origine d'Element.
+- Portail FastAPI : enrôlement, révocation unique en 4 étapes + vérification finale, canaux classifiés
+  (restreinte 30 j / confidentiel 24 h / démo 5 min), conformité 2FA, journal d'audit. Comptes de démo via SEED_DEMO=1.
+- Tests : `cd portal && pytest` → 42 tests verts (vérifié le 31 oct. 19h).
 
-## Limites de l'environnement de Claude (importantes)
-- Docker Hub et GitHub Releases sont bloqués : la pile complète n'a PAS pu être démarrée par Claude.
-- Testable par Claude : validation de la config Synapse (pip), tests unitaires du portail, JSON/YAML.
-- Tout le reste doit être lancé par l'équipe (`docker compose up -d`) ; les erreurs sont à renvoyer à Claude.
+## Limites de l'environnement de Claude
+- Docker Hub bloqué : le `docker-compose.yml` n'a JAMAIS été démarré par Claude. Seule l'équipe peut le valider.
+- Claude peut tester : config Synapse (pip, version 1.139), tests unitaires du portail, processus réels hors Docker
+  (Keycloak dans /home/claude/sandbox/keycloak-26.5.7).
 
 ## Avancement
 - [x] PDF relu, pile validée
-- [x] Dépôt initialisé, LICENSE (AGPL-3.0) en place
-- [ ] docker-compose.yml, .env, .gitattributes
-- [ ] deploy/ : caddy, element, synapse, keycloak (realm), postgres init
-- [ ] portal/ : app FastAPI + tests
-- [ ] scripts/ : verify_no_plaintext, comptes de démo
-- [ ] README.md (FR, 2 pages max), THIRD_PARTY.md
-- [ ] Pièces du dossier : fiche équipe, note de pré-projet (2 p.), note de sécurité (2 p.)
-- [ ] Script de la vidéo (3 min)
-- [ ] Bonus : tests automatisés (+2) ; langue nationale (+3, traduction à faire valider par un locuteur natif)
+- [x] Dépôt : compose, deploy/ (caddy, element, synapse, keycloak, postgres), portail + 42 tests, LICENSE AGPL-3.0
+- [ ] **Validation `docker compose up -d --build` sur la machine de l'équipe** (bloquant, à faire ce soir)
+- [x] scripts/verify-no-plaintext.sh + service `verifier` (profil `outils`) : syntaxe et compose validés, NON exécuté contre un vrai Postgres
+- [x] README.md (2 p.), THIRD_PARTY.md (licences Element Web / vodozemac à revérifier à la source)
+- [x] docs/ : NOTE_PRE_PROJET.pdf + NOTE_SECURITE.pdf (2 p. chacun, vérifié), SCRIPT_VIDEO, DEMO_JURY
+- [ ] docs/FICHE_EQUIPE.md : champs [entre crochets] à compléter par l'équipe + 3 attestations d'inscription 2026-2027
+- [ ] Après validation du compose par l'équipe : corriger ce qui casse, mettre à jour les docs si le comportement diffère
+- [ ] Commits Git réels et progressifs poussés sur un dépôt public par l'équipe (auteurs = les 3 étudiants)
+- [ ] Bonus : tests automatisés (+2, déjà 42 tests) ; langue nationale (+3, à faire valider par un locuteur natif)
 
-## Reste à demander à l'équipe
-- Confirmer le nom d'équipe, noms/filières/contacts, attestations d'inscription 2026-2027.
-- Créer le dépôt public (GitHub/GitLab/Codeberg) et pousser avec des commits RÉELS et progressifs.
+## À demander / faire par l'équipe
+- Confirmer le nom d'équipe ; noms, filières, contacts ; attestations d'inscription 2026-2027.
+- Créer le dépôt public (GitHub/GitLab/Codeberg) et pousser avec des commits RÉELS (auteurs : les étudiants).
