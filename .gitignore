@@ -6,3 +6,6 @@ venv/
 .env
 *.db
 *.log
+
+# Fichier de reprise interne (suivi de session), non publie
+STATUS.md

@@ -20,7 +20,7 @@ Synapse (AGPL-3.0), Element Web (AGPL-3.0 ou GPL-3.0), Keycloak (Apache-2.0), Po
 
 ## 5. Niveau d'engagement open source
 
-**Étendre et adapter** : Element Web et Synapse, configurés et durcis (fédération, présence, aperçus d'URL, inscription et mots de passe désactivés, rôle exigé à la connexion), étendus par un composant original, le **portail d'administration** (`portal/`, environ 1 300 lignes de code et de tests, 42 tests automatisés).
+**Étendre et adapter** : Element Web et Synapse, configurés et durcis (fédération, présence, aperçus d'URL, inscription et mots de passe désactivés, rôle exigé à la connexion), étendus par un composant original, le **portail d'administration** (`portal/`, environ 1 300 lignes de code et de tests, 43 tests automatisés).
 
 ## 6. Fonctionnalités innovantes (démontrées)
 

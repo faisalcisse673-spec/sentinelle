@@ -57,7 +57,7 @@ Réinitialisation complète : `docker compose down -v`.
 
 ## Vérifications
 
-- **Tests automatisés** (42, dont enrôlement, révocation, accès refusé, CSRF) : `cd portal && pip install -r requirements-dev.txt && pytest`.
+- **Tests automatisés** (43, dont enrôlement, révocation, accès refusé, CSRF) : `cd portal && pip install -r requirements-dev.txt && pytest`.
 - **Preuve « le serveur ne lit rien »** : envoyer un message contenant `TEMOIN-7421`, puis `docker compose --profile outils run --rm verifier TEMOIN-7421`. Le script inspecte la base et les fichiers comme le ferait un administrateur et échoue si un message ou un fichier est en clair.
 - Déroulé complet des épreuves du jury : [`docs/DEMO_JURY.md`](docs/DEMO_JURY.md).
 

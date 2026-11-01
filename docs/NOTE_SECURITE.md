@@ -36,4 +36,4 @@ Mesures pour le réduire : présence désactivée (pas de « en ligne » ni « v
 6. **Console Keycloak** accessible sur le même proxy : à restreindre au réseau d'administration en production.
 7. **Captures d'écran et transfert** : non bloquables dans un client web. Ces fonctions nécessiteraient une application native.
 8. **Sauvegarde des clés** : la perte des clés d'un agent entraîne la perte de son historique chiffré.
-9. **Disponibilité et audit** : un seul serveur, aucun audit externe ni test d'intrusion indépendant à ce stade. Les tests automatisés couvrent la logique du portail (42 tests).
+9. **Disponibilité et audit** : un seul serveur, aucun audit externe ni test d'intrusion indépendant à ce stade. Les tests automatisés couvrent la logique du portail (43 tests).
