@@ -122,7 +122,8 @@ def create_app(settings: Settings | None = None, service: AgentService | None = 
 
     @app.exception_handler(AccessDenied)
     async def denied(request: Request, exc: AccessDenied):
-        return templates.TemplateResponse(request, "denied.html", {"user": request.session.get("user")},
+        return templates.TemplateResponse(request, "denied.html",
+                                          {"user": request.session.get("user"), "denied": True},
                                           status_code=403)
 
     def csrf_token(request: Request) -> str:

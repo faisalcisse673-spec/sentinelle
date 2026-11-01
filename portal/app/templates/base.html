@@ -10,6 +10,7 @@
 <header class="top">
   <div class="brand"><span class="flag"></span> Sentinelle <small>Portail d'administration</small></div>
   {% if user %}
+  {% if not denied %}
   <nav>
     <a href="/" class="{{ 'on' if active == 'home' }}">Tableau de bord</a>
     <a href="/agents" class="{{ 'on' if active == 'agents' }}">Agents</a>
@@ -17,6 +18,7 @@
     <a href="/conformite" class="{{ 'on' if active == 'conf' }}">Conformité 2FA</a>
     <a href="/audit" class="{{ 'on' if active == 'audit' }}">Journal</a>
   </nav>
+  {% endif %}
   <div class="who">{{ user.name }} · <a href="/logout">Déconnexion</a></div>
   {% endif %}
 </header>
