@@ -169,9 +169,13 @@ class AgentService:
             raise ValidationError("Le responsable doit être un agent actif.")
         if ministere and ministere != "*":
             members = self.db.query(
-                "SELECT mxid FROM agents WHERE status='actif' AND ministere=?", (ministere,))
+                "SELECT mxid FROM agents WHERE status='actif' AND role='agent' AND ministere=?",
+                (ministere,))
         else:
-            members = self.db.query("SELECT mxid FROM agents WHERE status='actif'")
+            members = self.db.query(
+                "SELECT mxid FROM agents WHERE status='actif' AND role='agent'")
+        # Separation des taches : les administrateurs ne sont pas invites d'office (seul le
+        # responsable choisi rejoint le canal directement).
         invitees = [m["mxid"] for m in members]
         title = f"[{level.label.upper()}] {name}"
         room_id = await self.sy.create_encrypted_room(

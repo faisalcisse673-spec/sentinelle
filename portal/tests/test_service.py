@@ -117,6 +117,15 @@ async def test_canal_confidentiel_invite_le_ministere_et_expire_en_24h(service, 
     assert room["owner"] == "@awa.ouedraogo:sentinelle.local"
 
 
+async def test_canal_n_invite_pas_les_administrateurs_d_office(service, sy):
+    await enrol(service, "awa.ouedraogo", "MTDPCE")
+    await enrol(service, "admin.si", "MTDPCE", role="admin-si")
+    await service.create_channel("admin.si", "Cabinet", "confidentiel", "MTDPCE", "awa.ouedraogo")
+    assert sy.rooms_created[0]["invitees"] == ["@awa.ouedraogo:sentinelle.local"]
+    await service.create_channel("admin.si", "Tous", "confidentiel", "*", "awa.ouedraogo")
+    assert "@admin.si:sentinelle.local" not in sy.rooms_created[1]["invitees"]
+
+
 async def test_canal_n_invite_pas_les_agents_revoques(service, sy):
     await enrol(service, "awa.ouedraogo", "MTDPCE")
     await enrol(service, "ibrahim.sawadogo", "MTDPCE")
