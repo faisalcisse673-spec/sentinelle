@@ -81,6 +81,21 @@ class KeycloakAdmin:
         await self._call("PUT", f"/users/{user_id}", json=rep)
         await self._call("POST", f"/users/{user_id}/logout")
 
+    async def reenable(self, user_id: str, password: str) -> None:
+        """Reactivation apres une revocation : le compte est rouvert mais l'agent doit
+        refaire une authentification complete (nouveau mot de passe, nouveau second facteur).
+        L'ancien code a usage unique est supprime : l'appareil qui le portait est inconnu."""
+        rep = (await self._call("GET", f"/users/{user_id}")).json()
+        rep["enabled"] = True
+        rep["requiredActions"] = ["UPDATE_PASSWORD", "CONFIGURE_TOTP"]
+        await self._call("PUT", f"/users/{user_id}", json=rep)
+        creds = (await self._call("GET", f"/users/{user_id}/credentials")).json()
+        for cred in creds:
+            if cred.get("type") == "otp":
+                await self._call("DELETE", f"/users/{user_id}/credentials/{cred['id']}")
+        await self._call("PUT", f"/users/{user_id}/reset-password",
+                         json={"type": "password", "value": password, "temporary": True})
+
     async def delete_user(self, user_id: str) -> None:
         await self._call("DELETE", f"/users/{user_id}", ok=(204, 404))
 

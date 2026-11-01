@@ -48,7 +48,8 @@
       <td>{% if a.status == 'actif' %}<span class="pill ok">actif</span>
           {% elif a.status == 'revoque' %}<span class="pill bad">révoqué</span>
           {% else %}<span class="pill warn">révocation partielle</span>{% endif %}</td>
-      <td>{% if a.status != 'revoque' and a.username != user.username %}<a class="btn danger sm" href="/agents/{{ a.id }}/revoke">Révoquer</a>{% endif %}</td>
+      <td>{% if a.status != 'revoque' and a.username != user.username %}<a class="btn danger sm" href="/agents/{{ a.id }}/revoke">Révoquer</a>{% endif %}
+          {% if a.status != 'actif' and a.username != user.username %}<a class="btn ghost sm" href="/agents/{{ a.id }}/reactivate">Réactiver</a>{% endif %}</td>
     </tr>
     {% else %}<tr><td colspan="7" class="muted">Aucun agent.</td></tr>{% endfor %}
   </table>

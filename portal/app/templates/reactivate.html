@@ -1,0 +1,38 @@
+{% extends "base.html" %}{% set active = 'agents' %}
+{% block title %}Réactivation{% endblock %}
+{% block content %}
+<h1>Réactivation d'un agent</h1>
+{% if error %}<div class="alert err">{{ error }}</div>{% endif %}
+
+<section class="card">
+  <p><b>{{ agent.full_name }}</b> ({{ agent.username }}) · {{ agent.ministere }} · {{ agent.fonction }}</p>
+
+  {% if not report %}
+  <p>À utiliser lorsqu'une révocation a été faite <b>par erreur</b>. Ce n'est pas un retour en arrière :
+     l'agent repart <b>sans appareil ni salle</b>, avec un nouveau mot de passe provisoire et un
+     <b>nouveau second facteur</b> (l'ancien est supprimé). Il devra être réinvité dans ses canaux
+     et ne retrouvera pas les messages chiffrés échangés avant sa révocation sur ses anciens appareils.
+     L'action est inscrite au journal d'audit.</p>
+  <form method="post" action="/agents/{{ agent.id }}/reactivate">
+    <input type="hidden" name="csrf" value="{{ csrf }}">
+    <button class="btn" type="submit">Confirmer la réactivation</button>
+    <a class="btn ghost" href="/agents">Annuler</a>
+  </form>
+  {% else %}
+  <div class="alert {{ 'ok' if report.complete else 'err' }}">
+    {% if report.complete %}Agent réactivé et vérifié en {{ report.total_ms }} ms.<br>
+      Mot de passe provisoire (affiché une seule fois) : <code>{{ password }}</code><br>
+      À la prochaine connexion, l'agent change son mot de passe et configure son second facteur.
+    {% else %}Réactivation incomplète : le compte reste fermé à la connexion. Relancez l'opération.{% endif %}
+  </div>
+  <table>
+    <tr><th>Étape</th><th>Résultat</th><th>Détail</th><th>Durée</th></tr>
+    {% for s in report.steps %}
+    <tr><td>{{ s.name }}</td><td>{% if s.ok %}<span class="pill ok">OK</span>{% else %}<span class="pill bad">ÉCHEC</span>{% endif %}</td>
+        <td>{{ s.detail }}</td><td>{{ s.ms }} ms</td></tr>
+    {% endfor %}
+  </table>
+  <p><a class="btn ghost" href="/agents">Retour à l'annuaire</a></p>
+  {% endif %}
+</section>
+{% endblock %}

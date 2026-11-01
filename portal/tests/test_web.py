@@ -73,3 +73,17 @@ def test_enrolement_puis_revocation_via_le_portail(settings, service, kc, sy):
     r = c.post(f"/agents/{aid}/revoke", data={"csrf": "tok"})
     assert r.status_code == 200 and "Accès révoqué et vérifié" in r.text
     assert sy.accounts["@awa.ouedraogo:sentinelle.local"]["deactivated"]
+
+
+def test_reactivation_via_le_portail_et_refus_pour_un_agent_simple(settings, service, kc, sy):
+    c = client(settings, service, roles=["admin-si"])
+    c.post("/agents", data={"csrf": "tok", "username": "awa.ouedraogo", "full_name": "Awa Ouedraogo",
+                            "ministere": "MTDPCE", "fonction": "Directrice", "role": "agent"})
+    aid = service.db.one("SELECT id FROM agents")["id"]
+    c.post(f"/agents/{aid}/revoke", data={"csrf": "tok"})
+    assert "Réactiver" in c.get("/agents").text
+    r = c.post(f"/agents/{aid}/reactivate", data={"csrf": "tok"})
+    assert r.status_code == 200 and "Agent réactivé et vérifié" in r.text
+    assert not sy.accounts["@awa.ouedraogo:sentinelle.local"]["deactivated"]
+    simple = client(settings, service, roles=["agent"])
+    assert simple.post(f"/agents/{aid}/reactivate", data={"csrf": "tok"}).status_code == 403

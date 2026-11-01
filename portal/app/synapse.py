@@ -88,6 +88,18 @@ class SynapseAdmin:
         """Invalide jetons et appareils, retire le compte de toutes les salles."""
         await self._call("POST", f"/_synapse/admin/v1/deactivate/{quote(mxid)}", json={"erase": False})
 
+    async def reactivate(self, mxid: str, display_name: str, kc_subject: str) -> None:
+        """Rouvre un compte desactive. AUCUN mot de passe n'est pose : les mots de passe
+        Matrix sont desactives (Synapse refuserait meme d'en definir un), seule la connexion
+        Keycloak existe. Le lien avec l'identite Keycloak est reecrit, au cas ou la
+        desactivation l'aurait supprime (verifie sur un Synapse reel)."""
+        await self._call("PUT", f"/_synapse/admin/v2/users/{quote(mxid)}", ok=(200, 201), json={
+            "deactivated": False,
+            "displayname": display_name,
+            "admin": False,
+            "external_ids": [{"auth_provider": "oidc-keycloak", "external_id": kc_subject}],
+        })
+
     async def list_devices(self, mxid: str) -> list[str]:
         r = await self._call("GET", f"/_synapse/admin/v2/users/{quote(mxid)}/devices")
         return [d["device_id"] for d in r.json().get("devices", [])]

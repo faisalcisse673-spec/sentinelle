@@ -19,6 +19,7 @@ class FakeKeycloak:
         self.users: dict[str, dict] = {}
         self.calls: list[str] = []
         self.fail_disable = False
+        self.fail_reenable = False
         self.otp: set[str] = set()
 
     async def create_user(self, username, full_name, password, temporary, role):
@@ -33,6 +34,16 @@ class FakeKeycloak:
         if self.fail_disable:
             raise RuntimeError("Keycloak indisponible")
         self.users[uid]["enabled"] = False
+
+    async def reenable(self, uid, password):
+        self.calls.append(f"reenable:{uid}")
+        if self.fail_reenable:
+            raise RuntimeError("Keycloak indisponible")
+        self.users[uid].update(enabled=True, password=password, temporary=True)
+        self.otp.discard(uid)
+
+    async def is_enabled(self, uid):
+        return self.users[uid]["enabled"]
 
     async def delete_user(self, uid):
         self.calls.append(f"delete:{uid}")
@@ -65,6 +76,10 @@ class FakeSynapse:
     async def deactivate(self, mxid):
         self.calls.append(f"deactivate:{mxid}")
         self.accounts[mxid].update(deactivated=True, rooms=[])
+
+    async def reactivate(self, mxid, display_name, kc_subject):
+        self.calls.append(f"reactivate:{mxid}")
+        self.accounts[mxid].update(deactivated=False, kc=kc_subject)
 
     async def list_devices(self, mxid):
         return list(self.accounts[mxid]["devices"])

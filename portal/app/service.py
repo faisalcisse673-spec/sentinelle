@@ -154,6 +154,61 @@ class AgentService:
                       f"{status} en {report.total_ms} ms")
         return report
 
+    # ---- reactivation (erreur de revocation) ----------------------------------------
+    async def reactivate(self, actor: str, agent_id: int) -> tuple[str, RevocationReport]:
+        """Rouvre un agent revoque par erreur. Ce n'est PAS un retour en arriere : l'agent
+        repart sans appareil ni salle, avec un nouveau mot de passe provisoire et un nouveau
+        second facteur. Retourne (mot de passe provisoire, rapport). Tracee dans l'audit."""
+        row = self.db.one("SELECT * FROM agents WHERE id=?", (agent_id,))
+        if row is None:
+            raise ValidationError("Agent introuvable.")
+        if row["status"] == "actif":
+            raise ValidationError("Cet agent est déjà actif.")
+        if row["username"] == actor:
+            raise ValidationError("Un administrateur ne peut pas se réactiver lui-même.")
+        report = RevocationReport(agent=row["username"])
+        password = secrets.token_urlsafe(12)
+        mxid, kc_id = row["mxid"], row["kc_id"]
+
+        async def run(name: str, coro_factory) -> bool:
+            t0 = time.monotonic()
+            try:
+                detail = await coro_factory()
+                report.steps.append(Step(name, True, detail, int((time.monotonic() - t0) * 1000)))
+                return True
+            except Exception as exc:
+                report.steps.append(Step(name, False, str(exc), int((time.monotonic() - t0) * 1000)))
+                return False
+
+        async def synapse_step() -> str:
+            await self.sy.reactivate(mxid, row["full_name"], kc_id)
+            return "Compte Matrix rouvert, sans appareil ni salle"
+
+        async def kc_step() -> str:
+            await self.kc.reenable(kc_id, password)
+            return "Compte Keycloak rouvert : nouveau mot de passe et nouveau second facteur exigés"
+
+        async def verify_step() -> str:
+            if await self.sy.is_deactivated(mxid):
+                raise RuntimeError("le compte Matrix est encore désactivé")
+            if not await self.kc.is_enabled(kc_id):
+                raise RuntimeError("le compte Keycloak est encore désactivé")
+            return "Vérifié : comptes Keycloak et Matrix actifs"
+
+        # Matrix d'abord, Keycloak en dernier : l'agent ne peut se connecter qu'une fois
+        # l'ensemble prêt. Si une étape échoue, on n'ouvre PAS la porte à moitié.
+        ok = await run("Synapse : réactivation du compte", synapse_step)
+        if ok:
+            ok = await run("Keycloak : réouverture avec authentification complète", kc_step)
+        if ok:
+            ok = await run("Vérification finale", verify_step)
+        if ok:
+            self.db.execute("UPDATE agents SET status='actif', revoked_at=NULL WHERE id=?", (agent_id,))
+            self.db.audit(actor, "reactivation", row["username"], f"réactivé en {report.total_ms} ms")
+        else:
+            self.db.audit(actor, "reactivation_echec", row["username"], "étape en erreur, compte non réactivé")
+        return password, report
+
     # ---- canaux institutionnels -----------------------------------------------------
     async def create_channel(self, actor: str, name: str, level_key: str, ministere: str,
                              owner_username: str) -> str:

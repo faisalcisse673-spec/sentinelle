@@ -157,3 +157,52 @@ async def test_conformite_signale_les_agents_sans_second_facteur(service, kc):
     kc.otp.add("kc-awa.ouedraogo")
     rows = {r["username"]: r["otp"] for r in await service.compliance()}
     assert rows == {"awa.ouedraogo": True, "ibrahim.sawadogo": False}
+
+
+# ---- réactivation (révocation faite par erreur) --------------------------------------
+async def test_reactivation_rouvre_le_compte_avec_authentification_complete(service, kc, sy):
+    await enrol(service)
+    aid = service.db.one("SELECT id FROM agents")["id"]
+    kc.otp.add("kc-awa.ouedraogo")
+    await service.revoke("admin.si", aid)
+    password, report = await service.reactivate("admin.si", aid)
+    assert report.complete and password
+    assert kc.users["kc-awa.ouedraogo"]["enabled"] is True
+    assert kc.users["kc-awa.ouedraogo"]["temporary"] is True
+    assert "kc-awa.ouedraogo" not in kc.otp  # l'ancien second facteur est supprimé
+    assert sy.accounts["@awa.ouedraogo:sentinelle.local"]["deactivated"] is False
+    assert sy.accounts["@awa.ouedraogo:sentinelle.local"]["rooms"] == []  # aucune salle rendue
+    assert service.db.one("SELECT status FROM agents")["status"] == "actif"
+    assert service.db.one("SELECT action FROM audit ORDER BY id DESC LIMIT 1")["action"] == "reactivation"
+
+
+async def test_reactivation_refusee_pour_un_agent_deja_actif_ou_inconnu(service):
+    await enrol(service)
+    aid = service.db.one("SELECT id FROM agents")["id"]
+    with pytest.raises(ValidationError):
+        await service.reactivate("admin.si", aid)
+    with pytest.raises(ValidationError):
+        await service.reactivate("admin.si", 999)
+
+
+async def test_reactivation_ne_laisse_pas_la_porte_ouverte_si_keycloak_echoue(service, kc, sy):
+    await enrol(service)
+    aid = service.db.one("SELECT id FROM agents")["id"]
+    await service.revoke("admin.si", aid)
+    kc.fail_reenable = True
+    password, report = await service.reactivate("admin.si", aid)
+    assert not report.complete
+    assert kc.users["kc-awa.ouedraogo"]["enabled"] is False  # connexion toujours impossible
+    assert service.db.one("SELECT status FROM agents")["status"] == "revoque"
+    assert service.db.one("SELECT action FROM audit ORDER BY id DESC LIMIT 1")["action"] == "reactivation_echec"
+    kc.fail_reenable = False  # on peut relancer
+    _, report = await service.reactivate("admin.si", aid)
+    assert report.complete
+
+
+async def test_un_admin_ne_peut_pas_se_reactiver_lui_meme(service):
+    await service.enrol("seed", "admin.si", "Admin SI", "MTDPCE", "Admin", "admin-si")
+    aid = service.db.one("SELECT id FROM agents")["id"]
+    service.db.execute("UPDATE agents SET status='revoque' WHERE id=?", (aid,))
+    with pytest.raises(ValidationError):
+        await service.reactivate("admin.si", aid)

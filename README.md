@@ -9,6 +9,7 @@ Les agents publics échangent des informations de service sur des messageries do
 - **enrôlement** des agents par ministère et par fonction (annuaire officiel) ;
 - **révocation unique** : un clic coupe Keycloak et Synapse, supprime les appareils, retire l'agent des salles, puis **vérifie** le résultat et l'inscrit au journal d'audit ;
 - **canaux institutionnels classifiés** (Diffusion restreinte, Confidentiel) : chiffrés, sur invitation, avec **expiration automatique** des messages côté serveur ;
+- **réactivation encadrée** d'un agent révoqué par erreur (nouveau mot de passe et nouveau second facteur, sans appareil ni salle, tracée au journal) ;
 - **conformité** : liste des agents n'ayant pas encore configuré leur second facteur.
 
 ## Architecture
@@ -57,7 +58,7 @@ Réinitialisation complète : `docker compose down -v`.
 
 ## Vérifications
 
-- **Tests automatisés** (43, dont enrôlement, révocation, accès refusé, CSRF) : `cd portal && pip install -r requirements-dev.txt && pytest`.
+- **Tests automatisés** (48, dont enrôlement, révocation, accès refusé, CSRF) : `cd portal && pip install -r requirements-dev.txt && pytest`.
 - **Preuve « le serveur ne lit rien »** : envoyer un message contenant `TEMOIN-7421`, puis `docker compose --profile outils run --rm verifier TEMOIN-7421`. Le script inspecte la base et les fichiers comme le ferait un administrateur et échoue si un message ou un fichier est en clair.
 - **Essai « Intrus »** (inscription, mot de passe Matrix et API d'administration refusés) : `powershell -ExecutionPolicy Bypass -File .\scripts\essai-intrus.ps1`, attendu `RESULTAT : REUSSI`. Sous Linux ou macOS, les mêmes appels `curl` sont décrits dans [`docs/DEMO_JURY.md`](docs/DEMO_JURY.md), épreuve 3.
 - Déroulé complet des épreuves du jury : [`docs/DEMO_JURY.md`](docs/DEMO_JURY.md).

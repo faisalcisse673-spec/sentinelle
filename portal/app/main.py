@@ -237,6 +237,29 @@ def create_app(settings: Settings | None = None, service: AgentService | None = 
         except ValidationError as exc:
             return render(request, "revoke.html", user, agent=row, report=None, error=str(exc), status=400)
 
+    @app.get("/agents/{agent_id}/reactivate", response_class=HTMLResponse)
+    async def reactivate_confirm(request: Request, agent_id: int, user: dict = Depends(require_admin)):
+        row = svc(request).db.one("SELECT * FROM agents WHERE id=?", (agent_id,))
+        if row is None:
+            raise HTTPException(404)
+        return render(request, "reactivate.html", user, agent=row, report=None, password=None, error=None)
+
+    @app.post("/agents/{agent_id}/reactivate", response_class=HTMLResponse)
+    async def reactivate(request: Request, agent_id: int, csrf: str = Form(...),
+                         user: dict = Depends(require_admin)):
+        check_csrf(request, csrf)
+        service_ = svc(request)
+        row = service_.db.one("SELECT * FROM agents WHERE id=?", (agent_id,))
+        if row is None:
+            raise HTTPException(404)
+        try:
+            password, report = await service_.reactivate(user["username"], agent_id)
+            return render(request, "reactivate.html", user, agent=row, report=report,
+                          password=password if report.complete else None, error=None)
+        except ValidationError as exc:
+            return render(request, "reactivate.html", user, agent=row, report=None, password=None,
+                          error=str(exc), status=400)
+
     @app.get("/channels", response_class=HTMLResponse)
     async def channels(request: Request, user: dict = Depends(require_admin)):
         db = svc(request).db
