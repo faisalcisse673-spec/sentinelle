@@ -15,7 +15,7 @@ Pré-requis : `docker compose up -d --build`, tous les services `healthy`. Deux 
 
 1. `awa`, `ibrahim` et `moussa.traore` discutent dans un même groupe.
 2. Dans le portail (`http://admin.localhost:8080`, compte `admin.si`) : Agents, puis **Révoquer** `moussa.traore`.
-3. Le portail affiche les étapes (Keycloak, compte Matrix, appareils, vérification finale) et la durée.
+3. Le portail affiche les étapes (Keycloak, compte Matrix, appareils, vérification finale) et la durée (mesurée à 1,2 s lors de notre essai). L'étape « suppression des appareils » peut indiquer 0 : la désactivation du compte Matrix les a déjà supprimés, et la vérification finale contrôle `0 appareil, 0 salle`.
 4. Côté `moussa` : la session se ferme à la prochaine synchronisation et il ne reçoit plus les nouveaux messages. Une reconnexion est refusée (compte Keycloak désactivé). Côté `awa` : le groupe continue, `moussa` n'y figure plus.
 
 ## Épreuve 3 : Intrus

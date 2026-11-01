@@ -24,7 +24,7 @@ Synapse (AGPL-3.0), Element Web (AGPL-3.0 ou GPL-3.0), Keycloak (Apache-2.0), Po
 
 ## 6. Fonctionnalités innovantes (démontrées)
 
-- **Révocation unique, vérifiée et tracée** : un clic désactive le compte Keycloak, ferme ses sessions, désactive le compte Matrix, supprime tous ses appareils et le retire de ses salles, puis contrôle le résultat (compte inactif, 0 appareil, 0 salle). La durée est mesurée et inscrite au journal.
+- **Révocation unique, vérifiée et tracée** : un clic désactive le compte Keycloak, ferme ses sessions, désactive le compte Matrix, supprime tous ses appareils et le retire de ses salles, puis contrôle le résultat (compte inactif, 0 appareil, 0 salle). La durée est mesurée et inscrite au journal : **1,2 s** relevée lors de notre essai (Keycloak 561 ms, Synapse 106 ms, vérification 536 ms), avec reconnexion refusée ensuite.
 - **Annuaire officiel et enrôlement** par ministère et par fonction ; création du compte Matrix liée à l'identité Keycloak, sans aucun mot de passe Matrix.
 - **Canaux institutionnels classifiés** : *Diffusion restreinte* (30 jours) et *Confidentiel* (24 heures) ; salles sur invitation, chiffrées dès la création, avec **expiration automatique côté serveur** (la purge se base sur l'horodatage, sans lire le contenu). Les agents du ministère choisi sont invités automatiquement, les agents révoqués jamais.
 - **Conformité du second facteur** : liste des agents actifs n'ayant pas configuré leur TOTP.
