@@ -29,7 +29,7 @@ Pré-requis : `docker compose up -d --build`, tous les services `healthy`. Deux 
 ## Épreuve 4 : Innovation
 
 1. Portail, **Canaux** : créer un canal *Confidentiel* pour un ministère. Les agents actifs du ministère sont invités, chiffrés dès la création.
-2. Créer un canal *Éphémère (démonstration)* (5 minutes) : envoyer un message, attendre la purge (le serveur purge chaque minute), recharger Element : le message a expiré, sans que le serveur l'ait jamais lu.
+2. Créer un canal *Éphémère (démonstration)* (5 minutes) : envoyer un message, attendre 6 à 7 minutes (le serveur purge chaque minute), puis dans Element faire Paramètres, Aide et à propos, **Vider le cache et recharger** : le message a expiré côté serveur, sans que le serveur l'ait jamais lu. Sans cette étape, Element peut continuer d'afficher le message gardé dans la mémoire locale du navigateur (constaté lors de nos essais).
 3. **Conformité** : liste des agents sans second facteur. **Audit** : toutes les actions d'administration.
 
 ## Épreuve 5 : Explication du code (qui répond est désigné par le jury)
